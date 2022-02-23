@@ -77,6 +77,22 @@ END_MESSAGE_MAP()
 
 
 // CmultiWechatDlg 消息处理程序
+typedef BOOL(WINAPI* LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
+LPFN_ISWOW64PROCESS fnIsWow64Process;
+BOOL IsWow64()
+{
+	BOOL bIsWow64 = FALSE;
+	fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")), 
+		"IsWow64Process");
+	if (NULL != fnIsWow64Process)
+	{
+		if (!fnIsWow64Process(GetCurrentProcess(), &bIsWow64))
+		{
+			return TRUE;
+		}
+	}
+	return bIsWow64;
+}
 
 void EnableMultiWeChat()
 {
@@ -166,11 +182,20 @@ void WriteRegValue(
 void CmultiWechatDlg::LoadWechatPath()
 {
 	DWORD dwTpye = 0;
-	m_strWechatPath = ReadRegValue(
+	if (IsWow64()) {
+		m_strWechatPath = ReadRegValue(
 			HKEY_LOCAL_MACHINE,
 			TEXT("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\WeChat"),
 			TEXT("DisplayIcon"),
 			&dwTpye);
+	}
+	else {
+		m_strWechatPath = ReadRegValue(
+			HKEY_LOCAL_MACHINE,
+			TEXT("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\WeChat"),
+			TEXT("DisplayIcon"),
+			&dwTpye);
+	}
 	m_strWechatPath.TrimLeft(L"\"");
 	m_strWechatPath.TrimRight(L"\"");
 }
@@ -245,9 +270,8 @@ BOOL CmultiWechatDlg::OnInitDialog()
 	m_notifyIcon.uCallbackMessage = WM_SYSTEMTRAY;
 	m_notifyIcon.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
 	Shell_NotifyIcon(NIM_ADD, &m_notifyIcon);
-
-	//ShowWindow(SW_HIDE);
-	AfxGetApp()->m_pMainWnd->ShowWindow(SW_HIDE);
+	
+	PostMessage(WM_SYSCOMMAND, SC_MINIMIZE, 0);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -322,6 +346,7 @@ LRESULT CmultiWechatDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 			else
 			{
 				AfxGetApp()->m_pMainWnd->ShowWindow(SW_SHOW);
+				CenterWindow();
 			}
 		}
 		else if (lParam == WM_RBUTTONDOWN)
@@ -358,6 +383,9 @@ void CmultiWechatDlg::OnAllExit()
 void CmultiWechatDlg::OnBnClickedCheckAutostart()
 {
 	CString strKey = TEXT("SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Run\\");
+	if (!IsWow64()) {
+		strKey = TEXT("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\");
+	}
 	CString strItemName = TEXT("MultiWechat");
 	if (m_autoStart.GetCheck()) {
 		TCHAR szPath[MAX_PATH + 1] = { 0 };
