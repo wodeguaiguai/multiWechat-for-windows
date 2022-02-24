@@ -77,6 +77,21 @@ END_MESSAGE_MAP()
 
 
 // CmultiWechatDlg 消息处理程序
+
+void OutPutString(LPCWSTR strFormat, ...)
+{
+	if (NULL == strFormat)
+	{
+		return;
+	}
+	TCHAR strInfo[4096] = { 0 };
+	va_list arg_ptr = NULL;
+	va_start(arg_ptr, strFormat);
+	vswprintf_s(strInfo, 4096, strFormat, arg_ptr);
+	va_end(arg_ptr);
+	OutputDebugString(strInfo);
+}
+
 typedef BOOL(WINAPI* LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
 LPFN_ISWOW64PROCESS fnIsWow64Process;
 BOOL IsWow64()
@@ -214,11 +229,23 @@ void CmultiWechatDlg::StartWechat()
 void CmultiWechatDlg::CheckAutoStart()
 {
 	DWORD dwTpye = 0;
-	CString strStartString = ReadRegValue(
-		HKEY_LOCAL_MACHINE,
-		TEXT("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run\\"),
-		TEXT("MultiWechat"),
-		&dwTpye);
+	CString strStartString;
+	if (IsWow64()) 
+	{
+		strStartString = ReadRegValue(
+			HKEY_LOCAL_MACHINE,
+			TEXT("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run\\"),
+			TEXT("MultiWechat"),
+			&dwTpye);
+	}
+	else 
+	{
+		strStartString = ReadRegValue(
+			HKEY_LOCAL_MACHINE,
+			TEXT("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\"),
+			TEXT("MultiWechat"),
+			&dwTpye);
+	}
 	if (strStartString.GetLength() > 0) {
 		m_autoStart.SetCheck(1);
 	}
@@ -270,8 +297,22 @@ BOOL CmultiWechatDlg::OnInitDialog()
 	m_notifyIcon.uCallbackMessage = WM_SYSTEMTRAY;
 	m_notifyIcon.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
 	Shell_NotifyIcon(NIM_ADD, &m_notifyIcon);
-	
-	PostMessage(WM_SYSCOMMAND, SC_MINIMIZE, 0);
+;
+	int nArgs;
+	LPWSTR* szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
+	if (nArgs >= 2)
+	{
+		for (size_t i = 0; i < nArgs; i++)
+		{
+			if (lstrcmpW(szArglist[1], L"-backgroud") == 0) {
+				PostMessage(WM_SYSCOMMAND, SC_MINIMIZE, 0);
+				break;
+			}
+		}
+	}
+
+	LocalFree(szArglist);
+
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
