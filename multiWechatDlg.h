@@ -45,4 +45,6 @@ public:
 	afx_msg void OnAllExit();
 	afx_msg void OnBnClickedCheckAutostart();
 	CButton m_autoStart;
+	CStatic m_tips;
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 };

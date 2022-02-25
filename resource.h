@@ -14,6 +14,7 @@
 #define IDC_BTN_STAR                    1001
 #define IDC_CHECK1                      1002
 #define IDC_CHECK_AUTOSTART             1002
+#define IDC_TIPS                        1003
 #define ID_ALL_EXIT                     17001
 
 // Next default values for new objects
@@ -22,7 +23,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        133
 #define _APS_NEXT_COMMAND_VALUE         32773
-#define _APS_NEXT_CONTROL_VALUE         1003
+#define _APS_NEXT_CONTROL_VALUE         1004
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

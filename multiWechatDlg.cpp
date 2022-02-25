@@ -73,6 +73,7 @@ BEGIN_MESSAGE_MAP(CmultiWechatDlg, CDialogEx)
 	ON_WM_DESTROY()
 	ON_COMMAND(ID_ALL_EXIT, &CmultiWechatDlg::OnAllExit)
 	ON_BN_CLICKED(IDC_CHECK_AUTOSTART, &CmultiWechatDlg::OnBnClickedCheckAutostart)
+	ON_WM_CTLCOLOR()
 END_MESSAGE_MAP()
 
 
@@ -313,7 +314,6 @@ BOOL CmultiWechatDlg::OnInitDialog()
 
 	LocalFree(szArglist);
 
-
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -448,4 +448,17 @@ void CmultiWechatDlg::OnBnClickedCheckAutostart()
 			strKey,
 			strItemName);
 	}
+}
+
+
+HBRUSH CmultiWechatDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	HBRUSH hbr = CDialogEx::OnCtlColor(pDC, pWnd, nCtlColor);
+
+	if (pWnd->GetDlgCtrlID() == IDC_TIPS) 
+	{
+		pDC->SetTextColor(RGB(255, 0, 0));
+	}
+
+	return hbr;
 }
