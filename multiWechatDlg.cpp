@@ -305,7 +305,7 @@ BOOL CmultiWechatDlg::OnInitDialog()
 	{
 		for (size_t i = 0; i < nArgs; i++)
 		{
-			if (lstrcmpW(szArglist[1], L"-backgroud") == 0) {
+			if (lstrcmpW(szArglist[1], L"-background") == 0) {
 				PostMessage(WM_SYSCOMMAND, SC_MINIMIZE, 0);
 				break;
 			}
